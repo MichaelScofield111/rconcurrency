@@ -3,6 +3,7 @@
 use anyhow::Result;
 use std::{
     collections::HashMap,
+    fmt,
     sync::{Arc, RwLock},
 };
 
@@ -42,5 +43,15 @@ impl Metrics {
             .read()
             .map_err(|e| anyhow::anyhow!(e.to_string()))?
             .clone())
+    }
+}
+
+impl fmt::Display for Metrics {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let data = self.data.read().map_err(|_e| fmt::Error {})?;
+        for (key, count) in data.iter() {
+            writeln!(f, "{} {}", key, count)?;
+        }
+        Ok(())
     }
 }
