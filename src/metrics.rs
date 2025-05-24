@@ -3,12 +3,12 @@
 use anyhow::Result;
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex},
+    sync::{Arc, RwLock},
 };
 
 #[derive(Debug, Clone)]
 pub struct Metrics {
-    data: Arc<Mutex<HashMap<String, i64>>>,
+    data: Arc<RwLock<HashMap<String, i64>>>,
 }
 
 impl Default for Metrics {
@@ -20,14 +20,14 @@ impl Default for Metrics {
 impl Metrics {
     pub fn new() -> Self {
         Self {
-            data: Arc::new(Mutex::new(HashMap::new())),
+            data: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
     pub fn inc(&self, key: impl Into<String>) -> Result<()> {
         let mut data = self
             .data
-            .lock()
+            .write()
             .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
         data.entry(key.into())
@@ -39,7 +39,7 @@ impl Metrics {
     pub fn snapshot(&self) -> Result<HashMap<String, i64>> {
         Ok(self
             .data
-            .lock()
+            .read()
             .map_err(|e| anyhow::anyhow!(e.to_string()))?
             .clone())
     }
